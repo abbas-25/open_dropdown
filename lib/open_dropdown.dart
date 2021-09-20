@@ -2,26 +2,40 @@ library open_dropdown;
 
 import 'package:flutter/material.dart';
 
-Future<void> openDropdown(GlobalKey key) async {
+Future<void> openDropdown(GlobalKey key, {int? delayMilliSeconds}) async {
+
+  if(delayMilliSeconds != null)
+  await Future.delayed(Duration(milliseconds: delayMilliSeconds));
+
   try {
-    await Future.delayed(
-        Duration(
-          milliseconds: 300,
-        ),
-        () {});
+
+    GestureDetector? detector;
+    void findGestureDetector(BuildContext context) {
+      context.visitChildElements((element) {
+        if (element.widget is GestureDetector) {
+          detector = element.widget as GestureDetector;
+          return;
+        } else {
+          findGestureDetector(element);
+        }
+
+        return;
+      });
+    }
 
     if (key.currentContext != null) {
-      final detector = findGestureDetector(key.currentContext!);
+      findGestureDetector(key.currentContext!);
 
       if (detector != null) {
-        if (detector.onTap != null) {
-          detector.onTap!();
+        if (detector?.onTap != null) {
+          detector?.onTap!();
         } else {
           debugPrint(
               "ERROR openDropdown - onTap function on GestureDetector is null");
         }
       } else {
-        debugPrint("ERROR openDropdown - GestureDetector not found with provided GlobalKey");
+        debugPrint(
+            "ERROR openDropdown - GestureDetector not found with provided GlobalKey");
       }
     } else {
       debugPrint("ERROR openDropdown - Passed key has no current context");
@@ -29,21 +43,4 @@ Future<void> openDropdown(GlobalKey key) async {
   } catch (exception) {
     debugPrint("Exception in openDropdown: $exception");
   }
-}
-
-GestureDetector? findGestureDetector(BuildContext context) {
-  GestureDetector? detector;
-
-  context.visitChildElements((element) {
-    if (element.widget is GestureDetector) {
-      detector = element.widget as GestureDetector;
-      return;
-    } else {
-      findGestureDetector(element);
-    }
-
-    return;
-  });
-
-  return detector;
 }
